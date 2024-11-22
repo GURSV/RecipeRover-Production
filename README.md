@@ -16,13 +16,13 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 * Others: TypeScript, React.js
 
 📂 Project Structure
-├── backend/               # Backend API and server logic
-├── components/ui/         # UI components for the frontend
-├── public/                # Static assets
-├── src/                   # Application source files
-├── .eslintrc.json         # ESLint configuration
-├── tailwind.config.ts     # Tailwind CSS configuration
-└── package.json           # Node.js dependencies
+* ├── backend/               # Backend API and server logic
+* ├── components/ui/         # UI components for the frontend
+* ├── public/                # Static assets
+* ├── src/                   # Application source files
+* ├── .eslintrc.json         # ESLint configuration
+* ├── tailwind.config.ts     # Tailwind CSS configuration
+* └── package.json           # Node.js dependencies
 
 # Installation Steps
 1. Clone the repository:
