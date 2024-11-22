@@ -25,26 +25,26 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 * <pre>package.json           # Node.js dependencies</pre>
 
 # Installation Steps
-1. Clone the repository:
-&nbsp;* git clone https://github.com/GURSV/RecipeRover-Production.git
-&nbsp;* cd RecipeRover-Production
+# 1. Clone the repository:
+* git clone https://github.com/GURSV/RecipeRover-Production.git
+* cd RecipeRover-Production
 
-2. Install frontend dependencies:
+## 2. Install frontend dependencies:
 * cd src
 * npm install
 
-3. Configure the backend:
+## 3. Configure the backend:
 * cd backend
 * pip install -r requirements.txt
 
-4. Run the backend server:
+## 4. Run the backend server:
 * uvicorn main:app --reload
 
-5. Start the frontend:
+## 5. Start the frontend:
 * cd src
 * npm run dev
 
-6. Open your browser and navigate to:
+## 6. Open your browser and navigate to:
 * http://localhost:3000
 
 # 🌐 Deployment
