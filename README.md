@@ -26,8 +26,8 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 
 # Installation Steps
 1. Clone the repository:
-** git clone https://github.com/GURSV/RecipeRover-Production.git
-** cd RecipeRover-Production
+#^ git clone https://github.com/GURSV/RecipeRover-Production.git
+#^ cd RecipeRover-Production
 
 2. Install frontend dependencies:
 * cd src
