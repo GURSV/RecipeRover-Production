@@ -16,8 +16,8 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 * Others: TypeScript, React.js
 
 📂 Project Structure
-* <pre>backend/          # Backend API and server logic</pre> 
-* <pre>components/ui/         # UI components for the frontend</pre> 
+<pre>backend/                 # Backend API and server logic</pre> 
+<pre>components/ui/           # UI components for the frontend</pre> 
 * <pre>public/                # Static assets</pre>
 * <pre>src/                   # Application source files</pre> 
 * <pre>.eslintrc.json         # ESLint configuration</pre> 
