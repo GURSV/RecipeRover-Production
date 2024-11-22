@@ -25,11 +25,11 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 * package.json&nbsp;&nbsp;&nbsp;        # Node.js dependencies
 
 # ⬇️ Installation Steps
-## 1. Clone the repository:
+*## 1. Clone the repository:
 * git clone https://github.com/GURSV/RecipeRover-Production.git
 * cd RecipeRover-Production
 
-## 2. Install frontend dependencies:
+*## 2. Install frontend dependencies:
 * cd src
 * npm install
 
