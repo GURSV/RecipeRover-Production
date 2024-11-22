@@ -26,40 +26,39 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 
 # Installation Steps
 1. Clone the repository:
-git clone https://github.com/GURSV/RecipeRover-Production.git
-cd RecipeRover-Production
+* git clone https://github.com/GURSV/RecipeRover-Production.git
+* cd RecipeRover-Production
 
 2. Install frontend dependencies:
-cd src
-npm install
+* cd src
+* npm install
 
 3. Configure the backend:
-cd backend
-pip install -r requirements.txt
+* cd backend
+* pip install -r requirements.txt
 
 4. Run the backend server:
-uvicorn main:app --reload
+* uvicorn main:app --reload
 
 5. Start the frontend:
-cd src
-npm run dev
+* cd src
+* npm run dev
 
 6. Open your browser and navigate to:
-http://localhost:3000
+* http://localhost:3000
 
 🌐 Deployment
 1. Frontend:
-Deployed using Vercel.
-Update the vercel.json configuration file as needed.
+* Deployed using Vercel.
+* Update the vercel.json configuration file as needed.
 
 2. Backend:
-Log in to your Hugging Face account.
-Create a new Space for your backend.
-Upload your backend files to the Space, or connect it to this GitHub repository.
+* Log in to your Hugging Face account.
+* Create a new Space for your backend.
+* Upload your backend files to the Space, or connect it to this GitHub repository.
 
 🧑‍💻 Contributors
-GURSV (https://github.com/GURSV)
-Garvit-Nag (https://github.com/Garvit-Nag)
+* GURSV (https://github.com/GURSV)
+* Garvit-Nag (https://github.com/Garvit-Nag)
 
-📄 License
-This project is licensed under the MIT License.
+Thanks, Have a great day!
