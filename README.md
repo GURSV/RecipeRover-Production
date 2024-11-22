@@ -48,11 +48,11 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 * http://localhost:3000
 
 # 🌐 Deployment
-1. Frontend:
+## 1. Frontend:
 * Deployed using Vercel.
 * Update the vercel.json configuration file as needed.
 
-2. Backend:
+## 2. Backend:
 * Log in to your Hugging Face account.
 * Create a new Space for your backend.
 * Upload your backend files to the Space, or connect it to this GitHub repository.
