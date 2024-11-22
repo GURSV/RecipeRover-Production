@@ -1,21 +1,19 @@
-# RecipeRover
-
 ![logo](https://github.com/user-attachments/assets/34190e4e-4fc1-486b-aadd-a2a95e346178)
 
 RecipeRover is an intuitive platform designed for recipe management and discovery, built as part of a Final year Project. This repository houses the production-ready codebase for the project.
 
 🌟 Features
-● Recipe Discovery: Find recipes based on your preferences and available ingredients.
-● User-Friendly Interface: Intuitive and responsive design.
-● Customizable Search Filters: Search recipes by ingredients, preparation time, or cuisine type.
-● Ingredient Management: Easily manage and add your ingredient inventory.
+Recipe Discovery: Find recipes based on your preferences and available ingredients.
+* User-Friendly Interface: Intuitive and responsive design.
+* Customizable Search Filters: Search recipes by ingredients, preparation time, or cuisine type.
+* Ingredient Management: Easily manage and add your ingredient inventory.
 
 🚀 Technologies Used
-● Frontend: Next.js (with Tailwind CSS)
-● Backend: Python
-● Database: MongoDB
-● Deployment: Vercel for frontend and Hugging Face for backend
-● Others: TypeScript, React.js
+* Frontend: Next.js (with Tailwind CSS)
+* Backend: Python
+* Database: MongoDB
+* Deployment: Vercel for frontend and Hugging Face for backend
+* Others: TypeScript, React.js
 
 📂 Project Structure
 ├── backend/               # Backend API and server logic
