@@ -24,8 +24,8 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 * <pre>tailwind.config.ts     # Tailwind CSS configuration</pre> 
 * <pre>package.json           # Node.js dependencies</pre>
 
-# Installation Steps
-# 1. Clone the repository:
+# ⬇️ Installation Steps
+## 1. Clone the repository:
 * git clone https://github.com/GURSV/RecipeRover-Production.git
 * cd RecipeRover-Production
 
