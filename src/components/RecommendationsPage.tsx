@@ -1,3 +1,5 @@
+/* eslint-disable react/jsx-key */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -97,48 +99,48 @@ const RecommendationsPage: React.FC = () => {
         const storedRecommendations = sessionStorage.getItem('recommendations');
         console.log('[Storage Debug] Stored recommendations exist:', !!storedRecommendations);
         
-        if (storedRecommendations && userId) {
+        if (storedRecommendations) {
           const parsedRecommendations = JSON.parse(storedRecommendations);
           console.log('[Storage Debug] Parsed recommendations count:', parsedRecommendations.length);
           
-          // Set recommendations state
+          // Set recommendations state for all users
           setRecommendations(parsedRecommendations);
           
-          // Save to MongoDB
-          try {
-            console.log('[MongoDB Debug] Attempting to save to MongoDB. UserId:', userId);
-            console.log('[MongoDB Debug] First recipe in data:', parsedRecommendations[0]?.Name);
-            
-            const response = await fetch('/api/search-history', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                userId,
-                searchData: parsedRecommendations,
-                totalResults: parsedRecommendations.length
-              }),
-            });
-            
-            const responseData = await response.json();
-            console.log('[MongoDB Debug] Save response:', responseData);
-            
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
+          // Save to MongoDB only for logged-in users
+          if (userId) {
+            try {
+              console.log('[MongoDB Debug] Attempting to save to MongoDB. UserId:', userId);
+              
+              const response = await fetch('/api/search-history', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  userId,
+                  searchData: parsedRecommendations,
+                  totalResults: parsedRecommendations.length
+                }),
+              });
+              
+              const responseData = await response.json();
+              console.log('[MongoDB Debug] Save response:', responseData);
+              
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+            } catch (mongoError) {
+              console.error('[MongoDB Error] Failed to save to MongoDB:', mongoError);
             }
-          } catch (mongoError) {
-            console.error('[MongoDB Error] Failed to save to MongoDB:', mongoError);
+          } else {
+            console.log('[Info] User not logged in, skipping MongoDB save');
           }
           
-          // Clear storage after successful processing
+          // Clear storage after displaying recommendations (for all users)
           sessionStorage.removeItem('recommendations');
           console.log('[Storage Debug] Recommendations cleared from session storage');
         } else {
-          console.log('[Storage Debug] No recommendations found or no userId:', {
-            hasRecommendations: !!storedRecommendations,
-            userId
-          });
+          console.log('[Storage Debug] No recommendations found in session storage');
         }
       } catch (error) {
         console.error('[General Error] Error processing recommendations:', error);
@@ -149,8 +151,11 @@ const RecommendationsPage: React.FC = () => {
       }
     };
 
-    handleRecommendations();
-  }, [userId]);
+    // Call handleRecommendations when isSessionLoading is false
+    if (!isSessionLoading) {
+      handleRecommendations();
+    }
+  }, [userId, isSessionLoading]); 
 
   const defaultImageUrl = "default.png";
 
@@ -227,11 +232,11 @@ const RecommendationsPage: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen pt-24 bg-gradient-to-b from-[#0f0f0f] via-[#1c1c1c] to-[#252525] p-8" style={{
+    <div className="min-h-screen pt-24 bg-gradient-to-b from-[#0f0f0f] via-[#1c1c1c] to-[#252525] p-8 overflow-x-hidden" style={{
       backgroundImage: `url('/bg.png')`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
-  }}>
+    }}>
       {(isSessionLoading || isRecommendationsLoading) ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[...Array(6)].map((_, index) => (
@@ -239,10 +244,10 @@ const RecommendationsPage: React.FC = () => {
           ))}
         </div>
       ) : recommendations.length === 0 ? (
-        <div className="text-white text-center p-10 text-2xl">No recommendations found.</div>
+        <div className="text-white text-center p-10 text-2xl">No recommendations found. Try searching through form.</div>
       ) : (
         <div className="mt-12">
-      <h1 className="text-5xl font-bold text-center mb-1 text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">Recipe Recommendations</h1>
+      <h1 className="text-4xl font-bold text-center mb-1 text-white bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">Recipe Recommendations</h1>
       <div className="max-w-8xl mx-auto px-6 mt-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
           {recommendations.slice(0, 6).map((recipe) => (
@@ -338,7 +343,7 @@ const RecommendationsPage: React.FC = () => {
         )}
       </Dialog>
       <div className="mt-12 text-center">
-        <Button onClick={() => window.location.href = "/"}>
+        <Button onClick={() => window.location.href = "/form"}>
           Back to Recommendation Form
         </Button>
       </div>

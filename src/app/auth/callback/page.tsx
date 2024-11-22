@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { account, createUserDocument } from '@/lib/appwrite';
-import { DEFAULT_AVATAR } from '../page';
+import { DEFAULT_AVATAR } from '@/lib/constants';
 import SecondaryLoader from '@/components/ui/SecondaryLoader';
 
 export default function CallbackPage() {

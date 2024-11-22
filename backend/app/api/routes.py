@@ -32,6 +32,11 @@ async def recommend_recipes():  # Make this function async
     except ValueError:
         return jsonify({"error": "Calories and time must be integers if provided"}), 400
 
+    feature_weights_recommend = {
+        'ingredients': 0.15, 'category': 0.25, 'dietary': 0.20,
+        'calories': 0.10, 'time': 0.10, 'keywords': 0.10, 'keywords_name': 0.10
+    }
+
     # Use await to call the async function
     recommendations = await current_app.recommendation_system.get_recommendations(
         category=category,
@@ -40,7 +45,8 @@ async def recommend_recipes():  # Make this function async
         calories=calories,
         time=time,
         keywords=keywords,
-        keywords_name=keywords_name
+        keywords_name=keywords_name,
+        feature_weights=feature_weights_recommend
     )
 
     return jsonify([vars(recipe) for recipe in recommendations])
@@ -62,6 +68,11 @@ async def recommend_recipes2():
         # Check if extraction was successful
         if 'error' in extracted_info:
             return jsonify(extracted_info), 500
+        
+        feature_weights_extract = {
+            'ingredients': 0.50, 'category': 0.0, 'dietary': 0.0,
+            'calories': 0.0, 'time': 0.0, 'keywords': 0.40, 'keywords_name': 0.10
+        }
 
         # Access the extracted attributes
         category = extracted_info.get('category', '')
@@ -69,6 +80,7 @@ async def recommend_recipes2():
         time = extracted_info.get('time', None)
         keywords = extracted_info.get('keywords', [])
         keywords_name = extracted_info.get('keywords_name', [])
+        ingredients = extracted_info.get('ingredients', [])
 
         # Convert calories and time to integers if they exist
         try:
@@ -80,11 +92,12 @@ async def recommend_recipes2():
         # Get recommendations using the recommendation system
         recommendations = await current_app.recommendation_system.get_recommendations(
             category=category,
-            ingredients=[],  # Adjust if you plan to add ingredients in the extraction function
+            ingredients=ingredients,  # Adjust if you plan to add ingredients in the extraction function
             calories=calories,
             time=time,
             keywords=keywords,
-            keywords_name=keywords_name
+            keywords_name=keywords_name,
+            feature_weights=feature_weights_extract
         )
 
         # Convert recommendations to JSON-serializable format
@@ -117,12 +130,18 @@ async def handle_analyze_food_image():
         if 'error' in extracted_info:
             return jsonify(extracted_info), 500
 
+        feature_weights_extract = {
+            'ingredients': 0.50, 'category': 0.0, 'dietary': 0.0,
+            'calories': 0.0, 'time': 0.0, 'keywords': 0.40, 'keywords_name': 0.10
+        }
+
         # Access the extracted attributes
         category = extracted_info.get('category', '')
         calories = extracted_info.get('calories', None)
         time = extracted_info.get('time', None)
         keywords = extracted_info.get('keywords', [])
         keywords_name = extracted_info.get('keywords_name', [])
+        ingredients = extracted_info.get('ingredients', [])
 
         # Convert calories and time to integers if they exist
         try:
@@ -134,11 +153,12 @@ async def handle_analyze_food_image():
         # Get recommendations using the recommendation system
         recommendations = await current_app.recommendation_system.get_recommendations(
             category=category,
-            ingredients=[],  # Adjust if you plan to add ingredients in the extraction function
+            ingredients=ingredients,  # Adjust if you plan to add ingredients in the extraction function
             calories=calories,
             time=time,
             keywords=keywords,
-            keywords_name=keywords_name
+            keywords_name=keywords_name,
+            feature_weights=feature_weights_extract
         )
 
         # Convert recommendations to JSON-serializable format

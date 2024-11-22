@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -49,11 +50,10 @@ export default function FormPage() {
           <div className="space-y-8">
             <SearchSection />
             <OrDivider />
-            <RecommendationsForm setIsLoading={setIsLoading} />
+            <RecommendationsForm />
           </div>
         </div>
       </div>
-      {isLoading && <Preloader />}
       <Footer />
     </main>
   );

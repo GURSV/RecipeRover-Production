@@ -1,32 +1,59 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 import React, { useEffect, useState } from 'react';
 import { account, databases } from '@/lib/appwrite';
 import { useRouter } from 'next/navigation';
-import { Query } from 'appwrite';
+import { Query, Models } from 'appwrite';
 import { formatDistanceToNow } from 'date-fns';
 import { PencilIcon, SearchIcon, DownloadIcon } from 'lucide-react';
 
-const Card = ({ children, className }) => (
-  <div className={`p-6 rounded-lg shadow-lg ${className}`}>{children}</div>
+interface CardProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+interface SearchHistory {
+  _id: string;
+  userId: string;
+  searchDate: string;
+  searchData: any;
+}
+
+interface UserData extends Models.Document {
+  name: string;
+  email: string;
+  avatar: string;
+  createdAt: string;
+  lastLogin: string;
+  userId: string;
+}
+
+const Card: React.FC<CardProps> = ({ children, className }) => (
+  <div className={`p-6 rounded-lg shadow-lg ${className || ''}`}>{children}</div>
 );
 
-const CardContent = ({ children }) => <div className="mt-4">{children}</div>;
-
-const CardHeader = ({ children }) => <div className="mb-4">{children}</div>;
-
-const CardTitle = ({ children }) => (
-  <h2 className="text-2xl font-semibold">{children}</h2>
+const CardContent: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="mt-4">{children}</div>
 );
 
-const DashboardPage = () => {
+const CardHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <div className="mb-4">{children}</div>
+);
+
+const CardTitle: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
+  <h2 className={`text-2xl font-semibold ${className || ''}`}>{children}</h2>
+);
+
+const DashboardPage: React.FC = () => {
   const router = useRouter();
-  const [userData, setUserData] = useState(null);
-  const [searchHistory, setSearchHistory] = useState([]);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [searchHistory, setSearchHistory] = useState<SearchHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState('');
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
   const avatarOptions = [
     'https://cloud.appwrite.io/v1/storage/buckets/67276e2d002916c92b37/files/67276e7d0035c9e0947a/view?project=67269999000b28be9b29',
@@ -46,42 +73,37 @@ const DashboardPage = () => {
           return;
         }
 
-        // Fetch user document using the correct query format
+        const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+        const collectionId = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
+
+        if (!databaseId || !collectionId) {
+          throw new Error('Database or collection ID not configured');
+        }
+
         const userDocs = await databases.listDocuments(
-          process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-          process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
-          [
-            Query.equal('userId', session.userId)
-          ]
+          databaseId,
+          collectionId,
+          [Query.equal('userId', session.userId)]
         );
 
         if (userDocs.documents.length > 0) {
-          const user = userDocs.documents[0];
+          const user = userDocs.documents[0] as UserData;
           setUserData(user);
           setNewName(user.name);
         }
 
-        // Fetch search history from MongoDB
-        console.log('[Dashboard] Fetching search history for userId:', session.userId);
         const response = await fetch(`/api/search-history?userId=${session.userId}`);
-        console.log('[Dashboard] Search history API response status:', response.status);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch search history: ${response.status}`);
         }
 
-        const history = await response.json();
-        console.log('[Dashboard] Search history data received:', {
-          count: history.length,
-          firstItem: history[0],
-          lastItem: history[history.length - 1]
-        });
-
+        const history = await response.json() as SearchHistory[];
         setSearchHistory(history);
 
       } catch (error) {
         console.error('[Dashboard] Error in fetchUserData:', error);
-        setError(error.message);
+        setError(error instanceof Error ? error.message : 'An error occurred');
       } finally {
         setIsLoading(false);
       }
@@ -99,6 +121,13 @@ const DashboardPage = () => {
     try {
       if (!userData) return;
 
+      const databaseId = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+      const collectionId = process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID;
+
+      if (!databaseId || !collectionId) {
+        throw new Error('Database or collection ID not configured');
+      }
+
       const updatedData = {
         name: newName,
         avatar: selectedAvatar || userData.avatar,
@@ -114,28 +143,31 @@ const DashboardPage = () => {
       };
 
       await databases.updateDocument(
-        process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID,
-        process.env.NEXT_PUBLIC_APPWRITE_USERS_COLLECTION_ID,
+        databaseId,
+        collectionId,
         userData.$id,
         updatedData
       );
 
-      setUserData(prev => ({
-        ...prev,
-        ...updatedData
-      }));
+      setUserData(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          ...updatedData
+        };
+      });
       setIsEditing(false);
     } catch (error) {
       console.error('Error updating user:', error);
     }
   };
 
-  const handleSearchHistoryClick = async (historyData) => {
+  const handleSearchHistoryClick = async (historyData: SearchHistory) => {
     sessionStorage.setItem('recommendations', JSON.stringify(historyData.searchData));
     router.push('/recommendations');
   };
 
-  const parseCustomDate = (dateString) => {
+  const parseCustomDate = (dateString: string): Date => {
     if (!dateString) return new Date();
     
     const parts = dateString.split(' ');
@@ -150,13 +182,31 @@ const DashboardPage = () => {
     if (period === 'AM' && hour === 12) hour = 0;
 
     return new Date(
-      year,
+      parseInt(year),
       parseInt(month) - 1,
       parseInt(day),
       hour,
       parseInt(minutes),
       parseInt(seconds.split(' ')[0])
     );
+  };
+
+  const downloadJson = (data: SearchHistory) => {
+    try {
+      console.log('[Dashboard] Attempting to download JSON for document:', data._id);
+      const blob = new Blob([JSON.stringify(data.searchData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `search-data-${data._id}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      console.log('[Dashboard] JSON download completed');
+    } catch (error) {
+      console.error('[Dashboard] Error downloading JSON:', error);
+    }
   };
 
   if (isLoading) {
@@ -166,7 +216,9 @@ const DashboardPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-150px)]">
             <Card className="col-span-1 bg-[#1a1919] text-white border-none h-full animate-pulse">
               <CardHeader>
-                <CardTitle className="bg-gray-700 w-1/2 h-8 rounded"></CardTitle>
+                <CardTitle>
+                  <div className="bg-gray-700 w-1/2 h-8 rounded"></div>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-col items-center space-y-6">
@@ -179,7 +231,9 @@ const DashboardPage = () => {
             </Card>
             <Card className="col-span-1 lg:col-span-2 bg-[#1a1919] text-white border-none h-full animate-pulse">
               <CardHeader>
-                <CardTitle className="bg-gray-700 w-1/2 h-8 rounded"></CardTitle>
+                <CardTitle>
+                  <div className="bg-gray-700 w-1/2 h-8 rounded"></div>
+                </CardTitle>
                 <div className="mt-4 relative">
                   <div className="bg-gray-700 w-full h-12 rounded-lg"></div>
                 </div>
@@ -209,24 +263,6 @@ const DashboardPage = () => {
     );
   }
 
-  const downloadJson = (data) => {
-    try {
-      console.log('[Dashboard] Attempting to download JSON for document:', data._id);
-      const blob = new Blob([JSON.stringify(data.searchData, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `search-data-${data._id}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      console.log('[Dashboard] JSON download completed');
-    } catch (error) {
-      console.error('[Dashboard] Error downloading JSON:', error);
-    }
-  };
-
   return (
     <div 
       className="min-h-screen pt-24 px-4 sm:px-6 lg:px-8 bg-black bg-dashboard bg-cover bg-center bg-fixed"
@@ -234,10 +270,9 @@ const DashboardPage = () => {
         backgroundImage: "url('/dashboard.jpg')",
       }}
     >
-      <div className="max-w-[95%] mx-auto pb-24"> {/* Added pb-24 for footer spacing */}
+      <div className="max-w-[95%] mx-auto pb-24">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Section */}
-          <Card className="col-span-1 bg-[#1a1919]/90 text-white border-none h-full"> {/* Added opacity */}
+          <Card className="col-span-1 bg-[#1a1919]/90 text-white border-none h-full">
             <CardHeader>
               <CardTitle className="text-center text-cyan-400 text-2xl">Profile</CardTitle>
             </CardHeader>
@@ -306,7 +341,7 @@ const DashboardPage = () => {
                       </button>
                     </div>
                     
-                    <div className="space-y-4 bg-black/50 rounded-lg p-6"> {/* Added opacity */}
+                    <div className="space-y-4 bg-black/50 rounded-lg p-6">
                       <div className="space-y-3 text-center">
                         <div className="text-cyan-400 bg-black/70 px-4 py-2 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-2">
                           <span className="font-bold text-lg">EMAIL</span>
@@ -317,13 +352,13 @@ const DashboardPage = () => {
                         <div className="text-cyan-400 bg-black/70 px-4 py-2 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-2">
                           <span className="font-bold text-lg">JOINED</span>
                           <span className="text-white text-sm sm:text-base">
-                            {formatDistanceToNow(parseCustomDate(userData?.createdAt), { addSuffix: true })}
+                            {formatDistanceToNow(parseCustomDate(userData?.createdAt || ''), { addSuffix: true })}
                           </span>
                         </div>
                         <div className="text-cyan-400 bg-black/70 px-4 py-2 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-2">
                           <span className="font-bold text-lg">LAST LOGIN</span>
                           <span className="text-white text-sm sm:text-base">
-                            {formatDistanceToNow(parseCustomDate(userData?.lastLogin), { addSuffix: true })}
+                            {formatDistanceToNow(parseCustomDate(userData?.lastLogin || ''), { addSuffix: true })}
                           </span>
                         </div>
                       </div>
@@ -334,8 +369,7 @@ const DashboardPage = () => {
             </CardContent>
           </Card>
   
-          {/* Search History Section */}
-          <Card className="col-span-1 lg:col-span-2 bg-[#1a1919]/90 text-white border-none h-full"> {/* Added opacity */}
+          <Card className="col-span-1 lg:col-span-2 bg-[#1a1919]/90 text-white border-none h-full">
             <CardHeader>
               <CardTitle className="text-center text-cyan-400 text-2xl">Search History</CardTitle>
               <div className="mt-4 relative">
@@ -350,7 +384,7 @@ const DashboardPage = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2"> {/* Fixed height */}
+              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
                 {filteredHistory.length > 0 ? (
                   filteredHistory.map((history) => (
                     <div
@@ -388,7 +422,7 @@ const DashboardPage = () => {
                     </div>
                   ))
                 ) : (
-                  <div className="flex flex-col items-center justify-center h-[400px]"> {/* Fixed height */}
+                  <div className="flex flex-col items-center justify-center h-[400px]">
                     <img 
                       src="/search.png" 
                       alt="No search history" 
@@ -405,7 +439,7 @@ const DashboardPage = () => {
         </div>
       </div>
     </div>
-);
+  );
 };
 
 export default DashboardPage;

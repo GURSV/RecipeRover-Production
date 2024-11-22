@@ -1,105 +1,120 @@
-// src/lib/mongodb.ts
-import mongoose, { Model, Document } from 'mongoose';
+import mongoose, { Connection, Model, Document } from 'mongoose';
 
-// Interface for the search history document
 interface ISearchHistory extends Document {
-  userId: string;
-  searchData: any;
-  searchDate: Date;
-  totalResults: number;
+    userId: string;
+    searchData: any;
+    searchDate: Date;
+    totalResults: number;
 }
 
-// Declare global mongoose cache
-declare global {
-  var mongoose: {
-    conn: null | typeof mongoose;
-    promise: null | Promise<typeof mongoose>;
-  };
+let cached: {
+    conn: typeof mongoose | null;
+    promise: Promise<typeof mongoose> | null;
+} = (global as any).mongoose;
+
+if (!cached) {
+    cached = (global as any).mongoose = {
+        conn: null,
+        promise: null
+    };
 }
 
-// Initialize cache
-const globalMongoose = global as unknown as {
-  mongoose: {
-    conn: null | typeof mongoose;
-    promise: null | Promise<typeof mongoose>;
-  };
-};
+export async function connectToDatabase(): Promise<typeof mongoose> {
+    if (cached.conn) {
+        const connection = cached.conn.connection;
+        if (connection?.db) {
+            console.log('[MongoDB] Using existing connection to database:', connection.db.databaseName);
+        }
+        return cached.conn;
+    }
 
-if (!globalMongoose.mongoose) {
-  globalMongoose.mongoose = { conn: null, promise: null };
-}
+    if (!process.env.NEXT_PUBLIC_MONGODB_URI) {
+        throw new Error('Please define the NEXT_PUBLIC_MONGODB_URI environment variable inside .env');
+    }
 
-// Database connection function
-export async function connectToDatabase() {
-    console.log('[MongoDB] Starting database connection');
-
-    try {
-      const uri = process.env.NEXT_PUBLIC_MONGODB_URI;
-      if (!uri) {
-        console.error('[MongoDB] Missing MONGODB_URI environment variable');
-        throw new Error('Missing MONGODB_URI environment variable');
-      }
-
-      // Log the database name from the connection string (with credentials removed)
-      const dbName = uri.split('/').pop();
-      console.log('[MongoDB] Connecting to database:', dbName);
-
-      if (globalMongoose.mongoose.conn) {
-        console.log('[MongoDB] Using existing connection');
-        // Verify we're connected to the right database
-        const connectedDb = globalMongoose.mongoose.conn.connection.db.databaseName;
-        console.log('[MongoDB] Currently connected to database:', connectedDb);
-        return globalMongoose.mongoose.conn;
-      }
-
-      if (!globalMongoose.mongoose.promise) {
-        console.log('[MongoDB] Creating new connection');
+    if (!cached.promise) {
         const opts = {
-          bufferCommands: false,
+            bufferCommands: false,
         };
 
-        globalMongoose.mongoose.promise = mongoose.connect(uri, opts);
-      }
-
-      console.log('[MongoDB] Awaiting connection');
-      const conn = await globalMongoose.mongoose.promise;
-
-      // Log connected database details
-      const collections = await conn.connection.db.listCollections().toArray();
-      console.log('[MongoDB] Available collections:', collections.map(c => c.name));
-
-      globalMongoose.mongoose.conn = conn;
-      console.log('[MongoDB] Connection successful');
-      return conn;
-    } catch (error) {
-      console.error('[MongoDB] Connection error:', error);
-      throw error;
+        cached.promise = mongoose.connect(process.env.NEXT_PUBLIC_MONGODB_URI, opts)
+            .then((mongoose) => {
+                console.log('[MongoDB] New connection established');
+                return mongoose;
+            })
+            .catch((error) => {
+                console.error('[MongoDB] Connection error:', error);
+                throw error;
+            });
     }
-  }
 
-// Schema definition
+    try {
+        cached.conn = await cached.promise;
+        const connection: Connection = cached.conn.connection;
+        
+        if (connection.db) {
+            const collections = await connection.db.listCollections().toArray();
+            console.log('[MongoDB] Available collections:', collections.map(c => c.name));
+        }
+
+        return cached.conn;
+    } catch (error) {
+        cached.promise = null;
+        throw error;
+    }
+}
+
 const SearchHistorySchema = new mongoose.Schema<ISearchHistory>({
-  userId: {
-    type: String,
-    required: true,
-    index: true
-  },
-  searchData: {
-    type: mongoose.Schema.Types.Mixed,
-    required: true
-  },
-  searchDate: {
-    type: Date,
-    default: Date.now
-  },
-  totalResults: {
-    type: Number,
-    required: true
-  }
-}, {
-  timestamps: true
+    userId: { 
+        type: String, 
+        required: true, 
+        index: true 
+    },
+    searchData: { 
+        type: mongoose.Schema.Types.Mixed, 
+        required: true 
+    },
+    searchDate: { 
+        type: Date, 
+        default: Date.now 
+    },
+    totalResults: { 
+        type: Number, 
+        required: true 
+    }
+}, { 
+    timestamps: true 
 });
 
-// Model creation with proper typing
-export const SearchHistory: Model<ISearchHistory> = mongoose.models.SearchHistory || 
-  mongoose.model<ISearchHistory>('SearchHistory', SearchHistorySchema);
+SearchHistorySchema.index({ userId: 1, searchDate: -1 });
+
+export const SearchHistory: Model<ISearchHistory> = 
+    mongoose.models.SearchHistory || 
+    mongoose.model<ISearchHistory>('SearchHistory', SearchHistorySchema);
+
+export async function disconnectFromDatabase(): Promise<void> {
+    try {
+        if (cached.conn) {
+            await cached.conn.disconnect();
+            cached.conn = null;
+            cached.promise = null;
+            console.log('[MongoDB] Disconnected successfully');
+        }
+    } catch (error) {
+        console.error('[MongoDB] Error during disconnect:', error);
+        throw error;
+    }
+}
+
+export async function checkConnection(): Promise<boolean> {
+    try {
+        if (!cached.conn) {
+            return false;
+        }
+        const connection = cached.conn.connection;
+        return connection.readyState === 1;
+    } catch (error) {
+        console.error('[MongoDB] Error checking connection:', error);
+        return false;
+    }
+}

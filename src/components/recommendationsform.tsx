@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -40,6 +41,10 @@ const RecipeRecommendationForm: React.FC = () => {
   const [calorieRange, setCalorieRange] = useState({ min: 0, max: 1100 });
   const [timeRange, setTimeRange] = useState({ min: 0, max: 12000000 });
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
   const categoryOptions = formData
     ? formData.categories.map((cat) => ({ value: cat, label: cat }))
     : [];
@@ -219,7 +224,9 @@ const RecipeRecommendationForm: React.FC = () => {
     }),
   };
   
-  
+  if (!isMounted) {
+    return null; // or a loading spinner
+  }
 
   return (
     <div className="relative">
@@ -268,7 +275,7 @@ const RecipeRecommendationForm: React.FC = () => {
               options={categoryOptions}
               styles={customSelectStyles}
               placeholder="Select a category..."
-              menuPortalTarget={document.body} // Add this to render menu in a portal
+              menuPortalTarget={isMounted ? document.body : null} // Add this to render menu in a portal
               menuPosition="fixed" // Set menu position to fixed
             />
           </motion.div>
@@ -293,7 +300,7 @@ const RecipeRecommendationForm: React.FC = () => {
               styles={customSelectStyles}
               isDisabled={!category}
               placeholder="Select preferences..."
-              menuPortalTarget={document.body} // Add this to render menu in a portal
+              menuPortalTarget={isMounted ? document.body : null}// Add this to render menu in a portal
               menuPosition="fixed" // Set menu position to fixed
             />
           </motion.div>
@@ -318,7 +325,7 @@ const RecipeRecommendationForm: React.FC = () => {
               styles={customSelectStyles}
               isDisabled={!category}
               placeholder="Select ingredients..."
-              menuPortalTarget={document.body} // Add this to render menu in a portal
+              menuPortalTarget={isMounted ? document.body : null} // Add this to render menu in a portal
               menuPosition="fixed" // Set menu position to fixed
             />
           </motion.div>

@@ -1,23 +1,28 @@
+/* eslint-disable jsx-a11y/alt-text */
 import React, { useState, useRef } from "react";
 import { Search, Image, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Preloader from "./ui/Preloader";
-import { toast, Toast } from '@welcome-ui/toast';
 
-const SearchSection = () => {
+interface FileWithPath extends File {
+  path?: string;
+}
+
+const SearchSection: React.FC = () => {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showToast, setShowToast] = useState(false);
-  const fileInputRef = useRef(null);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedImage, setSelectedImage] = useState<FileWithPath | null>(null);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [showError, setShowError] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageSearch = async (file) => {
-    const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp'];
-    const fileExtension = file.name.split('.').pop().toLowerCase();
+  const handleImageSearch = async (file: FileWithPath) => {
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'avif'];
+    const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
 
     if (!allowedExtensions.includes(fileExtension)) {
-      setShowToast(true);
+      setShowError(true);
+      setTimeout(() => setShowError(false), 3000); // Auto-hide error after 3 seconds
       return;
     }
 
@@ -43,7 +48,7 @@ const SearchSection = () => {
     }
   };
 
-  const handleFileSelect = (file) => {
+  const handleFileSelect = (file: FileWithPath) => {
     setSelectedImage(file);
     handleImageSearch(file);
   };
@@ -84,15 +89,10 @@ const SearchSection = () => {
           <Preloader />
         </div>
       )}
-      {showToast && (
-        <Toast
-          variant="danger"
-          onDismiss={() => setShowToast(false)}
-          className="animate__animated animate__fadeInDown animate__faster"
-        >
-          <Toast.Title>Error</Toast.Title>
-          <p>Please upload a valid image file (jpg, jpeg, png, gif, bmp).</p>
-        </Toast>
+      {showError && (
+        <div className="absolute top-0 left-0 right-0 bg-red-500 text-white p-3 rounded-t-xl text-center animate__animated animate__fadeInDown animate__faster">
+          Please upload a valid image file (jpg, jpeg, png, gif, bmp).
+        </div>
       )}
       <div className="backdrop-blur-lg bg-[#1a1a1a] bg-opacity-90 p-5 rounded-xl shadow-2xl border border-gray-800">
         <form onSubmit={handleSearch}>
@@ -102,7 +102,7 @@ const SearchSection = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-[#2a2a2a] text-white px-4 py-3 pr-24 rounded-lg border border-gray-700 focus:ring-2 focus:ring-green-400 focus:border-transparent transition-all duration-200 animate__animated animate__fadeInDown animate__faster"
-              placeholder="Search recipes..."
+              placeholder="Eg: Something I can make with onions, garlic ... etc"
             />
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center space-x-2">
               <input
@@ -110,7 +110,10 @@ const SearchSection = () => {
                 type="file"
                 accept="image/jpeg, image/png, image/gif, image/bmp"
                 className="hidden"
-                onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelect(file);
+                }}
               />
               {selectedImage && (
                 <button
@@ -123,7 +126,11 @@ const SearchSection = () => {
               )}
               <button
                 type="button"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => {
+                  if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                  }
+                }}
                 className={`text-gray-400 hover:text-green-400 transition-colors duration-200 p-1 ${
                   selectedImage ? 'text-green-400' : ''
                 } animate__animated animate__fadeInRight animate__faster`}

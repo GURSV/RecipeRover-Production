@@ -1,3 +1,4 @@
+/* eslint-disable react/no-children-prop */
 import { useState } from 'react';
 import emailjs from '@emailjs/browser';
 import { motion } from 'framer-motion';
@@ -12,21 +13,29 @@ const ContactPage = () => {
   });
   const [status, setStatus] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: { preventDefault: () => void; }) => {
     e.preventDefault();
     setStatus('sending');
 
     try {
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+      
+      if (!serviceId || !templateId || !publicKey) {
+        throw new Error("EmailJS environment variables are not set.");
+      }
+      
       await emailjs.send(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID,
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID,
+        serviceId,
+        templateId,
         {
           from_name: formData.name,
           from_email: formData.email,
           message: formData.message,
-          to_email: 'garvitcpp@gmail.com, gurmeharsinghv@gmail.com'
+          to_email: ['garvitcpp@gmail.com', 'gurmeharsinghv@gmail.com']
         },
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY // Replace with your EmailJS public key
+        publicKey
       );
       
       setStatus('success');
@@ -41,7 +50,7 @@ const ContactPage = () => {
   return (
     <div className="min-h-screen relative bg-black text-white">
       <div className="absolute inset-0 bg-black">
-        <BackgroundLines />
+        <BackgroundLines children={undefined} />
       </div>
 
       <div className="relative z-10 container mx-auto px-4 py-8">
