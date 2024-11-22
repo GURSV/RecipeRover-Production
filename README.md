@@ -16,7 +16,7 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 * Others: TypeScript, React.js
 
 📂 Project Structure
-* ├── backend/               # Backend API and server logic
+* ├── <pre>backend/               # Backend API and server logic </pre>
 * ├── components/ui/         # UI components for the frontend
 * ├── public/                # Static assets
 * ├── src/                   # Application source files
