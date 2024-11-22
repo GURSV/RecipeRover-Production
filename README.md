@@ -2,20 +2,20 @@
 
 RecipeRover is an intuitive platform designed for recipe management and discovery, built as part of a Final year Project. This repository houses the production-ready codebase for the project.
 
-🌟 Features
+# 🌟 Features
 Recipe Discovery: Find recipes based on your preferences and available ingredients.
 * User-Friendly Interface: Intuitive and responsive design.
 * Customizable Search Filters: Search recipes by ingredients, preparation time, or cuisine type.
 * Ingredient Management: Easily manage and add your ingredient inventory.
 
-🚀 Technologies Used
+# 🚀 Technologies Used
 * Frontend: Next.js (with Tailwind CSS)
 * Backend: Python
 * Database: MongoDB
 * Deployment: Vercel for frontend and Hugging Face for backend
 * Others: TypeScript, React.js
 
-📂 Project Structure
+# 📂 Project Structure
 * <pre>backend/               # Backend API and server logic</pre> 
 * <pre>components/ui/         # UI components for the frontend</pre> 
 * <pre>public/                # Static assets</pre>
@@ -26,8 +26,8 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 
 # Installation Steps
 1. Clone the repository:
-* git clone https://github.com/GURSV/RecipeRover-Production.git
-* cd RecipeRover-Production
+** git clone https://github.com/GURSV/RecipeRover-Production.git
+** cd RecipeRover-Production
 
 2. Install frontend dependencies:
 * cd src
@@ -47,7 +47,7 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 6. Open your browser and navigate to:
 * http://localhost:3000
 
-🌐 Deployment
+# 🌐 Deployment
 1. Frontend:
 * Deployed using Vercel.
 * Update the vercel.json configuration file as needed.
@@ -57,7 +57,7 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 * Create a new Space for your backend.
 * Upload your backend files to the Space, or connect it to this GitHub repository.
 
-🧑‍💻 Contributors
+# 🧑‍💻 Contributors
 * GURSV (https://github.com/GURSV)
 * Garvit-Nag (https://github.com/Garvit-Nag)
 
