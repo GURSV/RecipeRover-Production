@@ -61,4 +61,4 @@ Recipe Discovery: Find recipes based on your preferences and available ingredien
 * GURSV (https://github.com/GURSV)
 * Garvit-Nag (https://github.com/Garvit-Nag)
 
-Thanks, Have a great day!
+⭐ Thanks, Have a great day ⭐
